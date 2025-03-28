@@ -91,6 +91,7 @@ Mesh* rmgDecode(unsigned char* rmgData, int dataSize, int* out_meshCount)
     Mesh* meshArray = (Mesh*)malloc(sizeof(Mesh) * (*out_meshCount));
     if (!meshArray) {
         printf("Memory allocation failed\n");
+        *out_meshCount = 0;
         return NULL;
     }
 
@@ -112,6 +113,9 @@ Mesh* rmgDecode(unsigned char* rmgData, int dataSize, int* out_meshCount)
         hasTangents = *ptr++;
         hasColors = *ptr++;
         hasIndices = *ptr++;
+
+        printf("Data is read with values: %i %i : %c %c %c %c %c %c\n", mesh->vertexCount, mesh->triangleCount, hasTexcoords, hasTexcoords2,
+                                                                                            hasNormals, hasTangents, hasColors, hasIndices);
 
         // Read vertex positions (3 floats per vertex)
         mesh->vertices = (float*)malloc(sizeof(float) * mesh->vertexCount * 3);
@@ -156,9 +160,9 @@ Mesh* rmgDecode(unsigned char* rmgData, int dataSize, int* out_meshCount)
 
         // Read colors if available (4 floats per vertex)
         if (hasColors == '1') {
-            mesh->colors = (unsigned char*)malloc(sizeof(float) * mesh->vertexCount * 4);
-            memcpy(mesh->colors, ptr, sizeof(float) * mesh->vertexCount * 4);
-            ptr += sizeof(float) * mesh->vertexCount * 4;
+            mesh->colors = (unsigned char*)malloc(sizeof(unsigned char*) * mesh->vertexCount * 4);
+            memcpy(mesh->colors, ptr, sizeof(unsigned char*) * mesh->vertexCount * 4);
+            ptr += sizeof(unsigned char*) * mesh->vertexCount * 4;
         } else {
             mesh->colors = NULL;
         }
@@ -179,6 +183,9 @@ Mesh* rmgDecode(unsigned char* rmgData, int dataSize, int* out_meshCount)
         mesh->boneWeights = NULL;
         mesh->boneMatrices = NULL;
         mesh->boneCount = 0;
+
+        mesh->vaoId = 0;
+        mesh->vboId = NULL;
 
         UploadMesh(mesh, false);
     }
